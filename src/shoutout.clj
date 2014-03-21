@@ -20,3 +20,11 @@
               (into [] (split raw-groups #","))
               (into [] (split raw-users  #","))
               (parse-percentage raw-percentage))))
+
+(defn serialize-feature [^Feature feature]
+  (str
+    (:percentage feature)
+    "|"
+    (s/join "," (:users feature))
+    "|"
+    (s/join "," (:groups feature))))
