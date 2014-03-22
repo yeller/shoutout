@@ -19,6 +19,46 @@
 ;; functional core
 (defrecord Feature [feature-name groups users percentage])
 
+(defprotocol HasUserId
+  "see the doc string for shoutout/user-id"
+  (user-id
+    [this]
+    "converts a user (of the protocol type) into a user id (which is just a
+    string).
+    this conversion happens in a few places:
+      - to check if a user should be in the activated percentage
+      - when marking a user as active for an individual feature
+      - when checking if a user is marked as active for an feature"))
+
+(extend-type String HasUserId
+  (user-id [this] this))
+
+(extend-type java.lang.Number HasUserId
+  (user-id [this] (str this)))
+
+(defn is-active-in-percentage [{percentage :percentage} user]
+  (< (mod (crc32 (user-id user)) 100) percentage))
+
+(defn is-active-user? [{active-users :users} user]
+  (contains? active-users (user-id user)))
+
+(defn is-active-in-group? [{active-groups :groups} group-definition user]
+  (some
+    (fn [group-name]
+      ((group-definition group-name (constantly false)) user))
+
+    active-groups))
+
+(defn active-feature?
+  "works out if a user is active in a feature, by checking percentages, if
+  they're specifically marked as active, or if they're in a group that is
+  active"
+  [feature group-definition user]
+  (or
+    (is-active-in-percentage feature user)
+    (is-active-user? feature user)
+    (is-active-in-group? feature group-definition user)))
+
 (defn parse-percentage [^String raw]
   (if (empty? raw)
     0
@@ -44,28 +84,6 @@
     "|"
     (s/join "," (:groups feature))))
 
-(defn is-active-in-percentage [{percentage :percentage} user]
-  (< (mod (crc32 user) 100) percentage))
-
-(defn is-active-user? [{active-users :users} user]
-  (contains? active-users user))
-
-(defn is-active-in-group? [{active-groups :groups} group-definition user]
-  (some
-    (fn [group-name]
-      ((group-definition group-name (constantly false)) user))
-
-    active-groups))
-
-(defn active-feature?
-  "works out if a user is active in a feature, by checking percentages, if
-  they're specifically marked as active, or if they're in a group that is
-  active"
-  [feature group-definition user]
-  (or
-    (is-active-in-percentage feature user)
-    (is-active-user? feature user)
-    (is-active-in-group? feature group-definition user)))
 
 ;; imperative shell
 (defprotocol ShoutoutStorage
@@ -132,7 +150,7 @@
     (fn [feature]
       (update-in feature
                 :users
-                 #(conj % user)))))
+                 #(conj % (user-id user))))))
 
 (defn deactivate-user
   "deactivate a feature for a particular user"
@@ -141,7 +159,7 @@
     (fn [feature]
       (update-in feature
                  :users
-                 #(disj % user)))))
+                 #(disj % (user-id user))))))
 
 (defn activate-percentage
   "activate a feature for a percentage of users.
