@@ -2,17 +2,19 @@
   (:require [clojure.string :as s])
   (:import java.util.zip.CRC32))
 
+;; infrastructure
 (defn crc32 [^String s]
   (let [crc (CRC32.)]
     (.update crc (.getBytes s))
     (.getValue crc)))
 
-(defrecord Feature [feature-name groups users percentage])
-
 (defn split [raw pattern]
   (if (empty? raw)
     []
     (s/split raw pattern)))
+
+;; functional core
+(defrecord Feature [feature-name groups users percentage])
 
 (defn parse-percentage [^String raw]
   (if (empty? raw)
@@ -54,6 +56,7 @@
     (is-active-user? feature user)
     (is-active-in-group? feature group-definition user)))
 
+;; imperative shell
 (defprotocol ShoutoutStorage
   (read-from-storage [storage ^String feature-name])
   (write-to-storage [storage  ^String feature-name ^String serialized]))
