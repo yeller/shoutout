@@ -161,8 +161,7 @@
 (defn shoutout
   "create a shoutout given some storage that implements ShoutoutStorage,
   and an optional set of group definitions. Group definitions are a map of
-  group names (as strings) to functions that check if a user is in the group
-  "
+  group names (as strings) to functions that check if a user is in the group"
   ([storage] (shoutout storage {}))
   ([storage groups]
    {:storage storage
