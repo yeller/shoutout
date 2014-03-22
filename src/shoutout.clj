@@ -17,8 +17,8 @@
   (let [[raw-percentage raw-users raw-groups]
         (split raw #"\|")]
     (Feature. feature-name
-              (into [] (split raw-groups #","))
-              (into [] (split raw-users  #","))
+              (into #{} (split raw-groups #","))
+              (into #{} (split raw-users  #","))
               (parse-percentage raw-percentage))))
 
 (defn serialize-feature [^Feature feature]
