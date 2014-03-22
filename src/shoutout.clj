@@ -89,7 +89,7 @@
   [storage feature-name]
   (parse-feature feature-name (read-from-storage storage feature-name)))
 
-(defn with-storage
+(defn update-in-storage
   "alter a feature using the supplied function f. handles reading, serializing,
   deserializing, you just write f to modify the feature as wanted"
   [storage feature-name f]
@@ -100,7 +100,7 @@
 (defn activate
   "completely activate a feature for all users"
   [{storage :storage} feature-name]
-  (with-storage
+  (update-in-storage
     #(assoc %
             :percentage
             100)))
@@ -109,7 +109,7 @@
   "activate a feature for a particular group.
   A group should just be a string"
   [{storage :storage} feature-name group]
-  (with-storage
+  (update-in-storage
     (fn [feature]
       (update-in feature
                 :groups
@@ -119,7 +119,7 @@
   "deactivate a feature for a particular group.
   A group is just a string"
   [{storage :storage} feature-name group]
-  (with-storage
+  (update-in-storage
     (fn [feature]
       (update-in feature
                  :groups
@@ -128,7 +128,7 @@
 (defn activate-user
   "activate a feature for a particular user"
   [{storage :storage} feature-name user]
-  (with-storage
+  (update-in-storage
     (fn [feature]
       (update-in feature
                 :users
@@ -137,7 +137,7 @@
 (defn deactivate-user
   "deactivate a feature for a particular user"
   [{storage :storage} feature-name user]
-  (with-storage
+  (update-in-storage
     (fn [feature]
       (update-in feature
                  :users
@@ -147,7 +147,7 @@
   "activate a feature for a percentage of users.
   percentages are out of 100"
   [{storage :storage} feature-name percent]
-  (with-storage
+  (update-in-storage
     (fn [feature]
       (assoc feature
              :percentage
