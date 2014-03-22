@@ -1,4 +1,4 @@
-(ns shoutout.core-test
+(ns shoutout-test
   (:require [clojure.test :refer :all]
             [shoutout :refer :all]))
 
