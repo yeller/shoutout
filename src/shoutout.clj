@@ -35,6 +35,25 @@
     "|"
     (s/join "," (:groups feature))))
 
+(defn is-active-in-percentage [{percentage :percentage} user]
+  (< (mod (crc32 user) 100) percentage))
+
+(defn is-active-user? [{active-users :users} user]
+  (contains? active-users user))
+
+(defn is-active-in-group? [{active-groups :groups} group-definition user]
+  (some
+    (fn [group-name]
+      ((group-definition group-name (constantly false)) user))
+
+    active-groups))
+
+(defn active-feature? [feature group-definition user]
+  (or
+    (is-active-in-percentage feature user)
+    (is-active-user? feature user)
+    (is-active-in-group? feature group-definition user)))
+
 (defprotocol ShoutoutStorage
   (read-from-storage [storage ^String feature-name])
   (write-to-storage [storage  ^String feature-name ^String serialized]))
@@ -93,25 +112,6 @@
       (assoc feature
              :percentage
              percent))))
-
-(defn is-active-in-percentage [{percentage :percentage} user]
-  (< (mod (crc32 user) 100) percentage))
-
-(defn is-active-user? [{active-users :users} user]
-  (contains? active-users user))
-
-(defn is-active-in-group? [{active-groups :groups} group-definition user]
-  (some
-    (fn [group-name]
-      ((group-definition group-name (constantly false)) user))
-
-    active-groups))
-
-(defn active-feature? [feature group-definition user]
-  (or
-    (is-active-in-percentage feature user)
-    (is-active-user? feature user)
-    (is-active-in-group? feature group-definition user)))
 
 (defn active? [{storage :storage groups :groups} feature-name user]
   (active-feature? (get-from-storage storage feature-name) groups user))
