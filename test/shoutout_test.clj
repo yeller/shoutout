@@ -66,3 +66,34 @@
   (testing "serializing percentage"
     (is (= (serialize-feature (->Feature "an-feature" [] [] 89))
            "89||"))))
+
+(deftest active-test
+  (testing "an individual user is active"
+    (is (active-feature? (->Feature "an-feature" #{} #{"1"} 0)
+                         {}
+                         "1")))
+
+  (testing "an user is active in an active group"
+    (is (active-feature? (->Feature "an-feature" #{"admin"} #{} 0)
+                         {"admin" (constantly true)}
+                         "1")))
+
+  (testing "an user is inactive in an inactive group"
+    (is (not (active-feature? (->Feature "an-feature" #{} #{} 0)
+                              {"admin" (constantly true)}
+                              "1"))))
+
+  (testing "an user is inactive because they are not in an active group"
+    (is (not (active-feature? (->Feature "an-feature" #{"admin"} #{} 0)
+                              {"admin" (constantly false)}
+                              "1"))))
+
+  (testing "without any groups, users or percentage active, a feature is inactive"
+    (is (not (active-feature? (->Feature "an-feature" #{} #{} 0)
+                              {}
+                              "1"))))
+
+  (testing "an user is active when percentage is set to 100"
+    (is (active-feature? (->Feature "an-feature" #{} #{} 100)
+                         {}
+                         "1"))))
