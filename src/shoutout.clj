@@ -123,6 +123,14 @@
             :percentage
             100)))
 
+(defn deactivate "completely turn off a feature for all users"
+  [{storage :storage} feature-name]
+  (update-in-storage
+    #(assoc %
+            :percentage 0
+            :groups #{}
+            :users #{})))
+
 (defn activate-group
   "activate a feature for a particular group.
   A group should just be a string"
