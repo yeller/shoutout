@@ -119,6 +119,7 @@
   "completely activate a feature for all users"
   [{storage :storage} feature-name]
   (update-in-storage
+    feature-name
     #(assoc %
             :percentage
             100)))
@@ -126,6 +127,7 @@
 (defn deactivate "completely turn off a feature for all users"
   [{storage :storage} feature-name]
   (update-in-storage
+    feature-name
     #(assoc %
             :percentage 0
             :groups #{}
@@ -136,6 +138,7 @@
   A group should just be a string"
   [{storage :storage} feature-name group]
   (update-in-storage
+    feature-name
     (fn [feature]
       (update-in feature
                 :groups
@@ -146,6 +149,7 @@
   A group is just a string"
   [{storage :storage} feature-name group]
   (update-in-storage
+    feature-name
     (fn [feature]
       (update-in feature
                  :groups
@@ -155,6 +159,7 @@
   "activate a feature for a particular user"
   [{storage :storage} feature-name user]
   (update-in-storage
+    feature-name
     (fn [feature]
       (update-in feature
                 :users
@@ -164,6 +169,7 @@
   "deactivate a feature for a particular user"
   [{storage :storage} feature-name user]
   (update-in-storage
+    feature-name
     (fn [feature]
       (update-in feature
                  :users
@@ -174,6 +180,7 @@
   percentages are out of 100"
   [{storage :storage} feature-name percent]
   (update-in-storage
+    feature-name
     (fn [feature]
       (assoc feature
              :percentage
