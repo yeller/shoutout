@@ -102,12 +102,10 @@
 
 (defn is-active-in-group? [{active-groups :groups} group-definition user]
   (some
-    active-groups
-    (map
-      (fn [[group-name decider]]
-        (if (decider user)
-          group-name))
-      group-definition)))
+    (fn [group-name]
+      ((group-definition group-name (constantly false)) user))
+
+    active-groups))
 
 (defn active-feature? [feature group-definition user]
   (or
