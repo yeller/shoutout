@@ -139,6 +139,9 @@ storage protocol has two functions, `read-from-storage`, and
 deal purely with serialized strings, and string keys, shoutout does the
 serialization logic itself.
 
+The library provides an in memory store (used for testing) that you could look
+at for an example.
+
 ## License
 
 Copyright © 2014 Tom Crayford
