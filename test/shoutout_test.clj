@@ -97,3 +97,31 @@
     (is (active-feature? (->Feature "an-feature" #{} #{} 100)
                          {}
                          "1"))))
+
+(deftest shell-test
+  (testing "after activating a group a user is in, the user is active"
+    (let [flags (shoutout (in-memory-store) {"admin" #(= % "admin")})]
+      (activate-group flags "chat" "admin")
+      (is (active? flags "chat" "admin"))))
+
+  (testing "after deactivating a group a user is in, the user is not active"
+    (let [flags (shoutout (in-memory-store) {"admin" #(= % "admin")})]
+      (activate-group flags "chat" "admin")
+      (deactivate-group flags "chat" "admin")
+      (is (not (active? flags "chat" "admin")))))
+
+  (testing "after activating a specific user, that user is active"
+    (let [flags (shoutout (in-memory-store))]
+      (activate-user flags "chat" "5")
+      (is (active? flags "chat" "5"))))
+
+  (testing "after deactivating a specific user, that user is active"
+    (let [flags (shoutout (in-memory-store))]
+      (activate-user flags "chat" "5")
+      (deactivate-user flags "chat" "5")
+      (is (not (active? flags "chat" "5")))))
+
+  (testing "if a feature hasn't been touched, users are inactive"
+    (let [flags (shoutout (in-memory-store) {"admin" #(do (println "lol") (= % "admin"))})]
+      (is (not (active? flags "chat" "admin"))))
+    ))

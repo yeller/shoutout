@@ -110,7 +110,9 @@
 (defn get-from-storage
   "retrieve a deserialized feature from storage"
   [storage feature-name]
-  (parse-feature (prefix-feature-name feature-name) (read-from-storage storage feature-name)))
+  (parse-feature feature-name
+                 (or (read-from-storage storage (prefix-feature-name feature-name))
+                     "||")))
 
 (defn update-in-storage
   "alter a feature using the supplied function f. handles reading, serializing,
@@ -125,6 +127,7 @@
   "completely activate a feature for all users"
   [{storage :storage} feature-name]
   (update-in-storage
+    storage
     feature-name
     #(assoc %
             :percentage
@@ -133,6 +136,7 @@
 (defn deactivate "completely turn off a feature for all users"
   [{storage :storage} feature-name]
   (update-in-storage
+    storage
     feature-name
     #(assoc %
             :percentage 0
@@ -144,10 +148,11 @@
   A group should just be a string"
   [{storage :storage} feature-name group]
   (update-in-storage
+    storage
     feature-name
     (fn [feature]
       (update-in feature
-                :groups
+                [:groups]
                  #(conj % group)))))
 
 (defn deactivate-group
@@ -155,30 +160,33 @@
   A group is just a string"
   [{storage :storage} feature-name group]
   (update-in-storage
+    storage
     feature-name
     (fn [feature]
       (update-in feature
-                 :groups
+                 [:groups]
                  #(disj % group)))))
 
 (defn activate-user
   "activate a feature for a particular user"
   [{storage :storage} feature-name user]
   (update-in-storage
+    storage
     feature-name
     (fn [feature]
       (update-in feature
-                :users
+                [:users]
                  #(conj % (user-id user))))))
 
 (defn deactivate-user
   "deactivate a feature for a particular user"
   [{storage :storage} feature-name user]
   (update-in-storage
+    storage
     feature-name
     (fn [feature]
       (update-in feature
-                 :users
+                 [:users]
                  #(disj % (user-id user))))))
 
 (defn activate-percentage
@@ -186,6 +194,7 @@
   percentages are out of 100"
   [{storage :storage} feature-name percent]
   (update-in-storage
+    storage
     feature-name
     (fn [feature]
       (assoc feature
@@ -194,7 +203,7 @@
 
 (defn active?
   "check if a particular user is active for a given feature"
-  [{storage :storage groups :groups} feature-name user]
+  [{storage :storage groups :groups :as foo} feature-name user]
   (active-feature? (get-from-storage storage feature-name) groups user))
 
 (defn shoutout
@@ -205,3 +214,16 @@
   ([storage groups]
    {:storage storage
     :groups groups}))
+
+(deftype InMemoryStorage [store-atom]
+  Object
+  (toString [_]
+    (str "InMemoryStore: " @store-atom))
+  ShoutoutStorage
+  (read-from-storage [_ feature-name]
+    (get @store-atom feature-name))
+  (write-to-storage [_ feature-name value]
+    (swap! store-atom assoc feature-name value)))
+
+(defn in-memory-store []
+  (InMemoryStorage. (atom {})))
