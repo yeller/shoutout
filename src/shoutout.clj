@@ -102,18 +102,24 @@
     [storage  ^String feature-name ^String serialized]
     "write a serialized feature to the storage"))
 
+(defn prefix-feature-name
+  "prefixes \"shoutout_feature\" onto a string"
+  [raw]
+  (str "shoutout_feature" raw))
+
 (defn get-from-storage
   "retrieve a deserialized feature from storage"
   [storage feature-name]
-  (parse-feature feature-name (read-from-storage storage feature-name)))
+  (parse-feature (prefix-feature-name feature-name) (read-from-storage storage feature-name)))
 
 (defn update-in-storage
   "alter a feature using the supplied function f. handles reading, serializing,
   deserializing, you just write f to modify the feature as wanted"
   [storage feature-name f]
   (let [feature (get-from-storage storage feature-name)]
-    (write-to-storage storage feature-name (serialize-feature
-                                             (f feature)))))
+    (write-to-storage storage
+                      (prefix-feature-name feature-name)
+                      (serialize-feature (f feature)))))
 
 (defn activate
   "completely activate a feature for all users"
