@@ -8,7 +8,10 @@
     (.update crc (.getBytes s))
     (.getValue crc)))
 
-(defn split [raw pattern]
+(defn split
+  "splits strings using clojure.string/split, but doesn't return [\"\"] when
+  splitting an empty string"
+  [raw pattern]
   (if (empty? raw)
     []
     (s/split raw pattern)))
@@ -21,7 +24,9 @@
     0
     (Integer/parseInt raw)))
 
-(defn parse-feature [^String feature-name ^String raw]
+(defn parse-feature
+  "turns a feature name and serialized feature into an feature"
+  [^String feature-name ^String raw]
   (let [[raw-percentage raw-users raw-groups]
         (split raw #"\|")]
     (Feature. feature-name
@@ -29,7 +34,9 @@
               (into #{} (split raw-users  #","))
               (parse-percentage raw-percentage))))
 
-(defn serialize-feature [^Feature feature]
+(defn serialize-feature
+  "turns a feature into a serialized feature, ready for storage"
+  [^Feature feature]
   (str
     (:percentage feature)
     "|"
@@ -50,7 +57,11 @@
 
     active-groups))
 
-(defn active-feature? [feature group-definition user]
+(defn active-feature?
+  "works out if a user is active in a feature, by checking percentages, if
+  they're specifically marked as active, or if they're in a group that is
+  active"
+  [feature group-definition user]
   (or
     (is-active-in-percentage feature user)
     (is-active-user? feature user)
@@ -58,67 +69,101 @@
 
 ;; imperative shell
 (defprotocol ShoutoutStorage
-  (read-from-storage [storage ^String feature-name])
-  (write-to-storage [storage  ^String feature-name ^String serialized]))
+  "an abstraction over storage for your feature toggles
 
-(defn get-from-storage [storage feature-name]
+  rough contract: after I put in a feature at feature-name, I should be able to
+  get out a feature at that feature-name at some point in the future
+
+  implementations of this protocol should NOT concern themselves with serialization,
+  they deal with serialized strings only"
+  (read-from-storage
+    [storage ^String feature-name]
+    "read the feature from the supplied storage. should return a raw String,
+    ready to be parsed by parse-feature")
+  (write-to-storage
+    [storage  ^String feature-name ^String serialized]
+    "write a serialized feature to the storage"))
+
+(defn get-from-storage
+  "retrieve a deserialized feature from storage"
+  [storage feature-name]
   (parse-feature feature-name (read-from-storage storage feature-name)))
 
-(defn with-storage [storage feature-name f]
+(defn with-storage
+  "alter a feature using the supplied function f. handles reading, serializing,
+  deserializing, you just write f to modify the feature as wanted"
+  [storage feature-name f]
   (let [feature (get-from-storage storage feature-name)]
     (write-to-storage storage feature-name (serialize-feature
                                              (f feature)))))
 
-(defn activate [{storage :storage} feature-name]
+(defn activate
+  "completely activate a feature for all users"
+  [{storage :storage} feature-name]
   (with-storage
     #(assoc %
             :percentage
             100)))
 
-(defn deactivate [{storage :storage} feature-name]
-  (with-storage
-    #(assoc %
-            :percentage
-            0)))
-
-(defn activate-group [{storage :storage} feature-name group]
+(defn activate-group
+  "activate a feature for a particular group.
+  A group should just be a string"
+  [{storage :storage} feature-name group]
   (with-storage
     (fn [feature]
       (update-in feature
                 :groups
                  #(conj % group)))))
 
-(defn deactivate-group [{storage :storage} feature-name group]
+(defn deactivate-group
+  "deactivate a feature for a particular group.
+  A group is just a string"
+  [{storage :storage} feature-name group]
   (with-storage
     (fn [feature]
       (update-in feature
                  :groups
                  #(disj % group)))))
 
-(defn activate-user [{storage :storage} feature-name user]
+(defn activate-user
+  "activate a feature for a particular user"
+  [{storage :storage} feature-name user]
   (with-storage
     (fn [feature]
       (update-in feature
                 :users
                  #(conj % user)))))
 
-(defn deactivate-user [{storage :storage} feature-name user]
+(defn deactivate-user
+  "deactivate a feature for a particular user"
+  [{storage :storage} feature-name user]
   (with-storage
     (fn [feature]
       (update-in feature
                  :users
                  #(disj % user)))))
 
-(defn activate-percentage [{storage :storage} feature-name percent]
+(defn activate-percentage
+  "activate a feature for a percentage of users.
+  percentages are out of 100"
+  [{storage :storage} feature-name percent]
   (with-storage
     (fn [feature]
       (assoc feature
              :percentage
              percent))))
 
-(defn active? [{storage :storage groups :groups} feature-name user]
+(defn active?
+  "check if a particular user is active for a given feature"
+  [{storage :storage groups :groups} feature-name user]
   (active-feature? (get-from-storage storage feature-name) groups user))
 
-(defn shoutout [storage groups]
-  {:storage storage
-   :groups groups})
+(defn shoutout
+  "create a shoutout given some storage that implements ShoutoutStorage,
+  and an optional set of group definitions. Group definitions are a map of
+  group names (as strings) to functions that check if a user is in the group
+  "
+  ([storage] (shoutout storage {}))
+  ([storage groups]
+   {:storage storage
+    :groups groups}))
