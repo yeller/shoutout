@@ -4,7 +4,7 @@ A clojure library that's a direct port of jamesgolick's rollout
 
 ## Usage
 
-(Available from clojars)[https://clojars.org/shoutout]
+[Available from clojars](https://clojars.org/shoutout)
 
 Initialize a shoutout (just a bundle of storage and group definitions):
 
