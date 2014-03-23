@@ -97,7 +97,7 @@ If a feature is broken, you can deactivate it for everybody at once:
 
 ## Namespacing
 
-Shouout separates its keys from other keys in the data store by prefixing all keys with `shoutout_feature`
+Shoutout separates its keys from other keys in the data store by prefixing all keys with `shoutout_feature`
 
 Various storages have namespacing faciltiies for prefixing keys as well - if you need further namespacing, be sure to use those.
 
