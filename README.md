@@ -107,8 +107,9 @@ deal purely with serialized strings, and string keys, shoutout does the
 serialization logic itself.
 
 The library provides an in memory store (used for testing) that you could look
-at for an example.
-
+at for an example. There is also an example store that uses apache curator's
+zookeeper `NodeCache` as a storage backend - so feature checks are purely in
+memory lookups, but backed by persistent, CP storage.
 
 ## Namespacing
 
