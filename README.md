@@ -147,8 +147,12 @@ In larger organizations, you'll likely want some kind of audit trail for your
 feature flags. Shoutout doesn't provide this kind of facility, it's designed
 for smaller places. You can start to get somewhere like that by using a storage
 (datomic for example) that keeps history for you, but that won't help you
-identify changed which feature flags.
+identify who changed which feature flags.
 
+Modification is (potentially) very racy. It depends on the backing store. In
+many many places this likely won't matter (I've never been bitten by it), but
+it's something to be aware of if you're likely to have more than a few folk
+modifying shoutout storage at once.
 
 ## License
 
