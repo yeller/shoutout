@@ -12,6 +12,8 @@ Initialize a shoutout (just a bundle of storage and group definitions):
 (shoutout my-storage)
 ```
 
+You'll need to provide shoutout with your own storage, but that part is relatively simple. See the (relevant readme section)[https://github.com/tcrayford/shoutout#storage]
+
 Check if a feature is active for a particular user:
 
 ```clojure
@@ -95,6 +97,19 @@ If a feature is broken, you can deactivate it for everybody at once:
 (deactivate shoutout "chat")
 ```
 
+## Storage
+
+Unlike rollout, shoutout is completely storage agnostic. You'll have to
+implement your own storage backend, which implements `ShoutoutStorage`. The
+storage protocol has two functions, `read-from-storage`, and
+`write-to-storage`, both of which should be simple enough to implement. Both
+deal purely with serialized strings, and string keys, shoutout does the
+serialization logic itself.
+
+The library provides an in memory store (used for testing) that you could look
+at for an example.
+
+
 ## Namespacing
 
 Shoutout separates its keys from other keys in the data store by prefixing all keys with `shoutout_feature`
@@ -130,17 +145,6 @@ for smaller places. You can start to get somewhere like that by using a storage
 (datomic for example) that keeps history for you, but that won't help you
 identify changed which feature flags.
 
-## Storage
-
-Unlike rollout, shoutout is completely storage agnostic. You'll have to
-implement your own storage backend, which implements `ShoutoutStorage`. The
-storage protocol has two functions, `read-from-storage`, and
-`write-to-storage`, both of which should be simple enough to implement. Both
-deal purely with serialized strings, and string keys, shoutout does the
-serialization logic itself.
-
-The library provides an in memory store (used for testing) that you could look
-at for an example.
 
 ## License
 
