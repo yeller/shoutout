@@ -12,7 +12,7 @@ Initialize a shoutout (just a bundle of storage and group definitions):
 (shoutout my-storage)
 ```
 
-You'll need to provide shoutout with your own storage, but that part is relatively simple. See the (relevant readme section)[https://github.com/tcrayford/shoutout#storage]
+You'll need to provide shoutout with your own storage, but that part is relatively simple. See the [relevant readme section](https://github.com/tcrayford/shoutout#storage)
 
 Check if a feature is active for a particular user:
 
