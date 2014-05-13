@@ -30,7 +30,7 @@ might, for example, have admin users and normal users for individual projects.
 You can activate the all group for the chat feature like this:
 
 ```clojure
-(activate-group shoutout "chat" "all)
+(activate-group shoutout "chat" "all")
 ```
 
 (note that group and feature names are both always strings)
